@@ -33,6 +33,11 @@ typeButtons.forEach((btn) => {
 transactionForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
+  if(currentType != 'expense' && document.getElementById("amount").value<0){
+    alert("Income amount is invalid")
+    return;
+  }
+
   const transaction = {
     id: Date.now(),
     type: currentType,
