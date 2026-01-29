@@ -297,6 +297,8 @@ select:focus {
   color: #666677;
 }
 
+
+/* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
   .main-content {
     grid-template-columns: 1fr;
