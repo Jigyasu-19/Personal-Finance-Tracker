@@ -1,15 +1,20 @@
 const expenseCategories = ["Food", "Transportation", "Entertainment", "Shopping", "Bills", "Healthcare", "Education", "Other"];
+
 const incomeCategories = ["Salary", "Freelance", "Investment", "Gift", "Other"];
 
+// Load transactions from localStorage or initialize empty array
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
 let currentType = "expense";
 
+// DOM element references
 const categorySelect = document.getElementById("category");
 const typeButtons = document.querySelectorAll(".type-btn");
 const transactionForm = document.getElementById("transactionForm");
 const transactionList = document.getElementById("transactionList");
 const categoryChart = document.getElementById("categoryChart");
 
+// Update category dropdown based on selected transaction type
 function updateCategoryOptions() {
   categorySelect.innerHTML = '<option value="">Select category</option>';
   const categories = currentType === "expense" ? expenseCategories : incomeCategories;
@@ -21,6 +26,7 @@ function updateCategoryOptions() {
   });
 }
 
+// Handle expense/income toggle button clicks
 typeButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     typeButtons.forEach((b) => b.classList.remove("active"));
@@ -30,14 +36,11 @@ typeButtons.forEach((btn) => {
   });
 });
 
+// Handle transaction form submission
 transactionForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  if(currentType != 'expense' && document.getElementById("amount").value<0){
-    alert("Income amount is invalid")
-    return;
-  }
-
+  // Create transaction object
   const transaction = {
     id: Date.now(),
     type: currentType,
@@ -46,11 +49,13 @@ transactionForm.addEventListener("submit", (e) => {
     category: categorySelect.value,
   };
 
+  // Add transaction to the beginning of array
   transactions.unshift(transaction);
   transactionForm.reset();
   updateUI();
 });
 
+// Update all UI components and save data
 function updateUI() {
   updateSummary();
   updateTransactionList();
@@ -58,6 +63,7 @@ function updateUI() {
   localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
+// Update income, expense, and balance summary
 function updateSummary() {
   const income = transactions
     .filter((t) => t.type === "income")
@@ -74,6 +80,7 @@ function updateSummary() {
   document.getElementById("netBalance").textContent = `₹${balance.toFixed(2)}`;
 }
 
+// Render transaction list
 function updateTransactionList() {
   if (transactions.length === 0) {
     transactionList.innerHTML = '<div class="empty-state">No transactions yet. Add your first one!</div>';
@@ -87,18 +94,20 @@ function updateTransactionList() {
                       <span class="transaction-category">${t.category}</span>
                     </div>
                     <div class="transaction-amount ${t.type}">
-                      ${t.type === "income" ? "+" : "-"}₹${t.amount.toFixed(2,)}
+                      ${t.type === "income" ? "+" : "-"}₹${t.amount.toFixed(2)}
                     </div>
                     <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
                   </div>`,
     ).join("");
 }
 
+// Delete a transaction by ID
 function deleteTransaction(id) {
   transactions = transactions.filter((t) => t.id !== id);
   updateUI();
 }
 
+// Generate category-wise expense chart
 function updateCategoryChart() {
   const expenses = transactions.filter((t) => t.type === "expense");
 
@@ -108,6 +117,7 @@ function updateCategoryChart() {
     return;
   }
 
+  // Calculate total expense per category
   const categoryTotals = {};
   expenses.forEach((t) => {
     categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
@@ -115,6 +125,7 @@ function updateCategoryChart() {
 
   const maxAmount = Math.max(...Object.values(categoryTotals));
 
+  // Render bars sorted by highest spending
   categoryChart.innerHTML = Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])
     .map(([cat, amount]) => {
@@ -130,5 +141,6 @@ function updateCategoryChart() {
     }).join("");
 }
 
+// Initial setup
 updateCategoryOptions();
 updateUI();
